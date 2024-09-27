@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { xdr, scValToNative, Keypair, Operation, Address, hash } from "@stellar/stellar-sdk";
-    import { Client } from "do-math-sdk";
+    import { xdr, scValToNative, Keypair } from "@stellar/stellar-sdk";
+    import { Client, type SignerLimits as SDKSignerLimits } from "do-math-sdk";
     import base64url from "base64url";
-    import { PasskeyServer, PasskeyKit, SACClient } from "passkey-kit";
+    import { PasskeyServer, PasskeyKit, SACClient, type SignerLimits, SignerStore, SignerKey } from "passkey-kit";
 
     const pk_server = new PasskeyServer({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
@@ -19,15 +19,15 @@
         factoryContractId: import.meta.env.PUBLIC_FACTORY,
     });
 
+    const sac = new SACClient({
+        rpcUrl: import.meta.env.PUBLIC_RPC_URL,
+        networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
+    });
+
     const contract = new Client({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
         networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
         contractId: import.meta.env.PUBLIC_DO_MATH,
-    });
-
-    const sac = new SACClient({
-        rpcUrl: import.meta.env.PUBLIC_RPC_URL,
-        networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
     });
 
     const native = sac.getSACClient(import.meta.env.PUBLIC_NATIVE)
@@ -173,21 +173,7 @@
             loading.set("addSigner_Ed25519", true);
             loading = loading
 
-            const limits = new Map();
-
-            const at = await pk_wallet.wallet!.add({
-                signer: {
-                    tag: "Ed25519",
-                    values: [
-                        keypair.rawPublicKey(),
-                        [limits],
-                        {
-                            tag: "Temporary",
-                            values: undefined,
-                        },
-                    ],
-                },
-            });
+            const at = await pk_wallet.addEd25519(keypair.publicKey(), new Map(), SignerStore.Temporary);
 
             await pk_wallet.sign(at, { keyId: keyId_ });
             const res = await pk_server.send(at.built!);
@@ -203,16 +189,16 @@
             loading.set("addSigner_Policy", true);
             loading = loading
 
-            const ed25519_limits = new Map();
-            const policy_limits = new Map();
+            const ed25519_limits: SDKSignerLimits = [new Map()];
+            const policy_limits: SDKSignerLimits = [new Map()];
 
             // ed25519 key can call do_math contract but only if it also calls the do_math policy
-            ed25519_limits.set(import.meta.env.PUBLIC_DO_MATH, [{
+            ed25519_limits[0].set(import.meta.env.PUBLIC_DO_MATH, [{
                 tag: "Policy",
                 values: [import.meta.env.PUBLIC_DO_MATH_POLICY]
             }]);
             // do_math policy can call do_math contract but only if it also calls the ed25519 signer
-            policy_limits.set(import.meta.env.PUBLIC_DO_MATH, [{
+            policy_limits[0].set(import.meta.env.PUBLIC_DO_MATH, [{
                 tag: "Ed25519",
                 values: [keypair.rawPublicKey()]
             }]);
@@ -224,7 +210,7 @@
                         tag: "Ed25519",
                         values: [
                             keypair.rawPublicKey(),
-                            [ed25519_limits],
+                            ed25519_limits,
                             {
                                 tag: "Temporary",
                                 values: undefined,
@@ -235,7 +221,7 @@
                         tag: "Policy",
                         values: [
                             import.meta.env.PUBLIC_DO_MATH_POLICY,
-                            [policy_limits],
+                            policy_limits,
                             {
                                 tag: "Temporary",
                                 values: undefined,
