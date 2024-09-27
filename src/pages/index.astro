@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DoMath from '../components/DoMath.svelte';
+---
+
+<Layout title="Do Math">
+	<main class="p-2">
+		<DoMath client:load></DoMath>
+	</main>
+</Layout>
