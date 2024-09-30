@@ -22,12 +22,14 @@ impl PolicyInterface for Contract {
         for context in contexts.iter() {
             match context {
                 Context::Contract(ContractContext { fn_name, .. }) => {
-                    if fn_name != symbol_short!("do_math") {
-                        panic_with_error!(&env, Error::NotAllowed)
+                    if fn_name == symbol_short!("do_math") {
+                        return;
                     }
                 }
-                Context::CreateContractHostFn(_) => panic_with_error!(&env, Error::NotAllowed),
+                _ => {}
             }
         }
+
+        panic_with_error!(&env, Error::NotAllowed)
     }
 }

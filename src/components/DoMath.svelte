@@ -1,9 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { xdr, scValToNative, Keypair } from "@stellar/stellar-sdk";
-    import { Client, type SignerLimits as SDKSignerLimits } from "do-math-sdk";
+    import { Client } from "do-math-sdk";
     import base64url from "base64url";
-    import { PasskeyServer, PasskeyKit, SACClient, type SignerLimits, SignerStore, SignerKey } from "passkey-kit";
+    import { PasskeyServer, PasskeyKit, SACClient, SignerStore, PasskeyClient, type SignerLimits, SignerKey } from "passkey-kit";
+    import { fundPubkey, fundSigner } from "../lib/common";
+
+    let url: URL
 
     const pk_server = new PasskeyServer({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
@@ -42,40 +45,68 @@
     let loading: Map<string, boolean> = new Map()
 
     onMount(() => {
-        const keyId = localStorage.getItem("dm:keyId");
-        const secret = localStorage.getItem("dm:ed25519");
+        url = new URL(location.href);
+
+        const keyId = url.searchParams.get("keyId") || undefined;
+        const contractId = url.searchParams.get("contractId") || undefined;
+        const secret = url.searchParams.get("secret");
 
         if (keyId) {
-            connectWallet(keyId);
+            connectWallet(keyId)
+            .then(() => {
+                if (contractId_)
+                    fundWallet();
+            });
+        } else if (contractId) {
+            // will be missing keyId_ but that's fine, just won't be able to sign with a passkey
+            pk_wallet.wallet = new PasskeyClient({
+                contractId,
+                rpcUrl: import.meta.env.PUBLIC_RPC_URL,
+                networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
+            })
+
+            contractId_ = contractId;
         }
 
         if (secret) {
             keypair = Keypair.fromSecret(secret);
         } else {
             keypair = Keypair.random();
-            localStorage.setItem("dm:ed25519", keypair.secret());
+            url.searchParams.set("secret", keypair.secret());
+            history.pushState({}, '', url);
         }
 
         refresh();
     });
 
     async function createWallet() {
-        const { keyId, contractId, built } = await pk_wallet.createWallet(
-            "Do Math",
-            "Do Math",
-        );
+        try {
+            loading.set("createWallet", true);
+            loading = loading
 
-        keyId_ = base64url(keyId);
+            const { keyId, contractId, built } = await pk_wallet.createWallet(
+                "Do Math",
+                "Do Math",
+            );
 
-        localStorage.setItem("dm:keyId", keyId_);
+            keyId_ = base64url(keyId);
 
-        const res = await pk_server.send(built);
+            const res = await pk_server.send(built);
 
-        console.log(res);
+            console.log(res);
 
-        contractId_ = contractId;
+            url.searchParams.set("keyId", keyId_);
+            history.pushState({}, '', url);
+
+            contractId_ = contractId;
+
+            fundWallet();
+        } finally {
+            loading.set("createWallet", false);
+            loading = loading
+        }
     }
-    async function connectWallet(keyId?: string) {
+    async function connectWallet(keyId: string) {
         const { keyId: kid, contractId } = await pk_wallet.connectWallet({
             keyId,
         });
@@ -83,7 +114,8 @@
         keyId_ = base64url(kid);
 
         if (!keyId) {
-            localStorage.setItem("dm:keyId", keyId_);
+            url.searchParams.set("keyId", keyId_);
+            history.pushState({}, '', url);
         }
 
         contractId_ = contractId;
@@ -109,6 +141,8 @@
             const result = scValToNative(meta.v3().sorobanMeta()!.returnValue());
 
             alert(`${a} + ${b} = ${result}`);
+
+            refresh();
         } finally {
             loading.set("doMath", false);
             loading = loading
@@ -134,36 +168,12 @@
             const result = scValToNative(meta.v3().sorobanMeta()!.returnValue());
 
             alert(`${a} + ${b} = ${result}`);
+
+            refresh();
         } catch {
             alert("❌ Failed to do math");
         } finally {
             loading.set("doMath_Ed25519", false);
-            loading = loading
-        }
-    }
-    async function doMath_Policy() {
-        try {
-            loading.set("doMath_Policy", true);
-            loading = loading
-
-            const at = await contract.do_math({
-                source: contractId_,
-                a: BigInt(a),
-                b: BigInt(b),
-            });
-
-            await pk_wallet.sign(at, { keypair });
-            await pk_wallet.sign(at, { policy: import.meta.env.PUBLIC_DO_MATH_POLICY });
-            const res = await pk_server.send(at.built!);
-
-            console.log(res);
-
-            const meta = xdr.TransactionMeta.fromXDR(res.resultMetaXdr, "base64");
-            const result = scValToNative(meta.v3().sorobanMeta()!.returnValue());
-
-            alert(`${a} + ${b} = ${result}`);
-        } finally {
-            loading.set("doMath_Policy", false);
             loading = loading
         }
     }
@@ -184,63 +194,57 @@
             loading = loading
         }
     }
-    async function addSigner_Policy() {
+    async function attach_Policy() {
         try {
-            loading.set("addSigner_Policy", true);
+            loading.set("attach_Policy", true);
             loading = loading
 
-            const ed25519_limits: SDKSignerLimits = [new Map()];
-            const policy_limits: SDKSignerLimits = [new Map()];
+            const ed25519_limits: SignerLimits = new Map();
 
             // ed25519 key can call do_math contract but only if it also calls the do_math policy
-            ed25519_limits[0].set(import.meta.env.PUBLIC_DO_MATH, [{
-                tag: "Policy",
-                values: [import.meta.env.PUBLIC_DO_MATH_POLICY]
-            }]);
-            // do_math policy can call do_math contract but only if it also calls the ed25519 signer
-            policy_limits[0].set(import.meta.env.PUBLIC_DO_MATH, [{
-                tag: "Ed25519",
-                values: [keypair.rawPublicKey()]
-            }]);
+            ed25519_limits.set(import.meta.env.PUBLIC_DO_MATH, [SignerKey.Policy(import.meta.env.PUBLIC_DO_MATH_POLICY)])
 
-            const at = await contract.add_signers({
-                webauthn_wallet: contractId_,
-                signers: [
-                    {
-                        tag: "Ed25519",
-                        values: [
-                            keypair.rawPublicKey(),
-                            ed25519_limits,
-                            {
-                                tag: "Temporary",
-                                values: undefined,
-                            },
-                        ]
-                    },
-                    {
-                        tag: "Policy",
-                        values: [
-                            import.meta.env.PUBLIC_DO_MATH_POLICY,
-                            policy_limits,
-                            {
-                                tag: "Temporary",
-                                values: undefined,
-                            },
-                        ],
-                    }
-                ]
-            })
+            const at = await pk_wallet.addEd25519(
+                keypair.publicKey(), 
+                ed25519_limits,
+                SignerStore.Temporary
+            );
 
             await pk_wallet.sign(at, { keyId: keyId_ });
             const res = await pk_server.send(at.built!);
 
             console.log(res);
         } finally {
-            loading.set("addSigner_Policy", false);
+            loading.set("attach_Policy", false);
             loading = loading
         }
     }
 
+    async function fundWallet() {
+        const amount = await native.balance({
+            id: contractId_,
+        })
+        .then(({ result }) => result)
+        .catch(() => BigInt(0))
+
+        if (amount > 1)
+            return
+        
+        const { built, ...transfer } = await native.transfer({
+			to: contractId_,
+			from: fundPubkey,
+			amount: BigInt(10_000_000),
+		});
+
+		await transfer.signAuthEntries({
+			address: fundPubkey,
+			signAuthEntry: fundSigner.signAuthEntry,
+		});
+
+		const res = await pk_server.send(built!);
+
+		console.log(res);
+	}
     async function transfer_Ed25519() {
         try {
             loading.set("transfer_Ed25519", true);
@@ -273,9 +277,7 @@
     function signOut() {
         keyId_ = "";
         contractId_ = "";
-        localStorage.removeItem("dm:keyId");
-        localStorage.removeItem("dm:ed25519");
-        window.location.reload();
+        location.assign(location.origin);
     }
 </script>
 
@@ -294,47 +296,49 @@
         <input class="border border-black rounded px-2 py-1" type="number" name="a" id="a" bind:value={a} />
         +
         <input class="border border-black rounded px-2 py-1" type="number" name="b" id="b" bind:value={b} />
-        <button class="bg-black text-white px-2 py-1 rounded" on:click={doMath}>
-            {#if loading.get("doMath")}
-                ...
-            {:else}
-                Do Math
-            {/if}
-        </button>
+        
+        {#if keyId_}
+            <button class="bg-black text-white px-2 py-1 rounded" on:click={doMath}>
+                {#if loading.get("doMath")}
+                    ...
+                {:else}
+                    Do Math
+                {/if}
+            </button>
+        
+        {/if}
+
         <button class="bg-black text-white px-2 py-1 rounded" on:click={doMath_Ed25519}>
             {#if loading.get("doMath_Ed25519")}
                 ...
             {:else}
                 Do Math (Ed25519)
             {/if}
-        </button>
-        <button class="bg-black text-white px-2 py-1 rounded" on:click={doMath_Policy}>
-            {#if loading.get("doMath_Policy")}
-                ...
-            {:else}
-                Do Math (Policy)
-            {/if}
+        
         </button>
     </div>
 
-    <br />
+    {#if keyId_}
+        <br />
 
-    <div>
-        <button class="bg-black text-white px-2 py-1 rounded" on:click={addSigner_Ed25519}>
-            {#if loading.get("addSigner_Ed25519")}
-                ...
-            {:else}
-                Add Signer (Ed25519)
-            {/if}
-        </button>
-        <button class="bg-black text-white px-2 py-1 rounded" on:click={addSigner_Policy}>
-            {#if loading.get("addSigner_Policy")}
-                ...
-            {:else}
-                Add Signer (Policy)
-            {/if}
-        </button>
-    </div>
+        <div>
+            <button class="bg-black text-white px-2 py-1 rounded" on:click={addSigner_Ed25519}>
+                {#if loading.get("addSigner_Ed25519")}
+                    ...
+                {:else}
+                    Add Signer (Ed25519)
+                {/if}
+            </button>
+            <button class="bg-black text-white px-2 py-1 rounded" on:click={attach_Policy}>
+                {#if loading.get("attach_Policy")}
+                    ...
+                {:else}
+                    Attach Policy
+                {/if}
+            </button>
+        </div>
+
+    {/if}
 
     <br />
 
@@ -347,7 +351,22 @@
             {/if}
         </button>
     </div>
+
+    {#if keypair}    
+        <br>
+
+        <div>
+            <a class="bg-black text-white px-2 py-1 rounded" href={location.origin + `?contractId=${contractId_}&secret=${keypair.secret()}`} target="_blank" rel="nofollow">
+                Share (Ed25519)
+            </a>
+        </div>
+    {/if}
 {:else}
-    <button class="bg-black text-white px-2 py-1 rounded" on:click={createWallet}>Sign Up</button>
-    <!-- <button on:click={() => connectWallet()}>Sign In</button> -->
+    <button class="bg-black text-white px-2 py-1 rounded mt-2" on:click={createWallet}>
+        {#if loading.get("createWallet")}
+            ...
+        {:else}
+            Sign Up
+        {/if}
+    </button>
 {/if}

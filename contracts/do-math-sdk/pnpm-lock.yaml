@@ -9,15 +9,15 @@ importers:
   .:
     dependencies:
       '@stellar/stellar-sdk':
-        specifier: file:../../ext/@stellar/stellar-sdk
-        version: file:../../ext/@stellar/stellar-sdk
+        specifier: 12.1.0
+        version: 12.1.0
       buffer:
         specifier: 6.0.3
         version: 6.0.3
     devDependencies:
       typescript:
-        specifier: 5.6.2
-        version: 5.6.2
+        specifier: 5.3.3
+        version: 5.3.3
 
 packages:
 
@@ -27,8 +27,8 @@ packages:
   '@stellar/stellar-base@12.1.1':
     resolution: {integrity: sha512-gOBSOFDepihslcInlqnxKZdIW9dMUO1tpOm3AtJR33K2OvpXG6SaVHCzAmCFArcCqI9zXTEiSoh70T48TmiHJA==}
 
-  '@stellar/stellar-sdk@file:../../ext/@stellar/stellar-sdk':
-    resolution: {directory: ../../ext/@stellar/stellar-sdk, type: directory}
+  '@stellar/stellar-sdk@12.1.0':
+    resolution: {integrity: sha512-Va0hu9SaPezmMbO5eMwL5D15Wrx1AGWRtxayUDRWV2Fr3ynY58mvCZS1vsgNQ4kE8MZe3nBVKv6T9Kzqwgx1PQ==}
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -61,9 +61,6 @@ packages:
     resolution: {integrity: sha512-IzUmBGPR3+oUG9dUeXynyNmf91/3zUSJg1lCktzKw47OXuhco54U3r9B7O4XX+Rb1Itm9OZ2b0RkTs10bICOxA==}
     engines: {node: '>=12.0.0'}
 
-  feaxios@0.0.20:
-    resolution: {integrity: sha512-g3hm2YDNffNxA3Re3Hd8ahbpmDee9Fv1Pb1C/NoWsjY7mtD8nyNeJytUzn+DK0Hyl9o6HppeWOrtnqgmhOYfWA==}
-
   follow-redirects@1.15.9:
     resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
     engines: {node: '>=4.0'}
@@ -82,10 +79,6 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
-
-  is-retry-allowed@3.0.0:
-    resolution: {integrity: sha512-9xH0xvoggby+u0uGF7cZXdrutWiBiaFG8ZT4YFPXL8NzkyAwX3AKGLeFQLvzDpM430+nDFBZ1LHkie/8ocL06A==}
-    engines: {node: '>=12'}
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
@@ -121,8 +114,8 @@ packages:
   tweetnacl@1.0.3:
     resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
-  typescript@5.6.2:
-    resolution: {integrity: sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==}
+  typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -144,13 +137,12 @@ snapshots:
     optionalDependencies:
       sodium-native: 4.2.0
 
-  '@stellar/stellar-sdk@file:../../ext/@stellar/stellar-sdk':
+  '@stellar/stellar-sdk@12.1.0':
     dependencies:
       '@stellar/stellar-base': 12.1.1
       axios: 1.7.7
       bignumber.js: 9.1.2
       eventsource: 2.0.2
-      feaxios: 0.0.20
       randombytes: 2.1.0
       toml: 3.0.0
       urijs: 1.19.11
@@ -186,10 +178,6 @@ snapshots:
 
   eventsource@2.0.2: {}
 
-  feaxios@0.0.20:
-    dependencies:
-      is-retry-allowed: 3.0.0
-
   follow-redirects@1.15.9: {}
 
   form-data@4.0.0:
@@ -201,8 +189,6 @@ snapshots:
   ieee754@1.2.1: {}
 
   inherits@2.0.4: {}
-
-  is-retry-allowed@3.0.0: {}
 
   mime-db@1.52.0: {}
 
@@ -235,6 +221,6 @@ snapshots:
 
   tweetnacl@1.0.3: {}
 
-  typescript@5.6.2: {}
+  typescript@5.3.3: {}
 
   urijs@1.19.11: {}
