@@ -12,8 +12,6 @@
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
         launchtubeUrl: import.meta.env.PUBLIC_LAUNCHTUBE_URL,
         launchtubeJwt: import.meta.env.PUBLIC_LAUNCHTUBE_JWT,
-        mercuryUrl: import.meta.env.PUBLIC_MERCURY_URL,
-        mercuryJwt: import.meta.env.PUBLIC_MERCURY_JWT,
     });
 
     const pk_wallet = new PasskeyKit({
@@ -29,8 +27,8 @@
 
     const contract = new Client({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
-        networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
         contractId: import.meta.env.PUBLIC_DO_MATH,
+        networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
     });
 
     const native = sac.getSACClient(import.meta.env.PUBLIC_NATIVE)
@@ -53,10 +51,6 @@
 
         if (keyId) {
             connectWallet(keyId)
-            .then(() => {
-                if (contractId_)
-                    fundWallet();
-            });
         } else if (contractId) {
             // will be missing keyId_ but that's fine, just won't be able to sign with a passkey
             pk_wallet.wallet = new PasskeyClient({
@@ -67,6 +61,9 @@
 
             contractId_ = contractId;
         }
+
+        if (contractId_)
+            fundWallet();
 
         if (secret) {
             keypair = Keypair.fromSecret(secret);
