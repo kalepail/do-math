@@ -127,6 +127,7 @@
                 source: contractId_,
                 a: BigInt(a),
                 b: BigInt(b),
+                sac: undefined // import.meta.env.PUBLIC_NATIVE
             });
 
             await pk_wallet.sign(at, { keyId: keyId_ });
@@ -154,6 +155,7 @@
                 source: contractId_,
                 a: BigInt(a),
                 b: BigInt(b),
+                sac: undefined // import.meta.env.PUBLIC_NATIVE
             });
             
             await pk_wallet.sign(at, { keypair });
