@@ -4,7 +4,7 @@ resolver = "2"
 members = ["do-math", "do-math-policy"]
 
 [workspace.dependencies]
-soroban-sdk = { version = "21.7.2" }
+soroban-sdk = { version = "21.7.3" }
 webauthn-wallet-interface = { git = "https://github.com/kalepail/passkey-kit", branch = "next" }
 
 [profile.release]

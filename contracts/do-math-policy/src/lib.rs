@@ -20,13 +20,10 @@ pub struct Contract;
 impl PolicyInterface for Contract {
     fn policy__(env: Env, _source: Address, contexts: Vec<Context>) {
         for context in contexts.iter() {
-            match context {
-                Context::Contract(ContractContext { fn_name, .. }) => {
-                    if fn_name == symbol_short!("do_math") {
-                        return;
-                    }
+            if let Context::Contract(ContractContext { fn_name, .. }) = context {
+                if fn_name == symbol_short!("do_math") {
+                    return;
                 }
-                _ => {}
             }
         }
 
