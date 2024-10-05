@@ -50,7 +50,7 @@
         const secret = url.searchParams.get("secret");
 
         if (keyId) {
-            connectWallet(keyId)
+            connectWallet(keyId).then(() => fundWallet());
         } else if (contractId) {
             // will be missing keyId_ but that's fine, just won't be able to sign with a passkey
             pk_wallet.wallet = new PasskeyClient({
@@ -60,10 +60,9 @@
             })
 
             contractId_ = contractId;
-        }
 
-        if (contractId_)
             fundWallet();
+        }   
 
         if (secret) {
             keypair = Keypair.fromSecret(secret);
