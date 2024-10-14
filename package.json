@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "dude": "cd contracts/do-math-sdk && npm i && npm run build"
+    "dude": "cd ./contracts/do-math-sdk && npm i && npm run build"
   },  
   "dependencies": {
     "@astrojs/check": "^0.9.4",
