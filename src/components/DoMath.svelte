@@ -1,8 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { xdr, scValToNative, Keypair } from "@stellar/stellar-sdk";
+    import { xdr, scValToNative, Keypair } from "@stellar/stellar-sdk/minimal";
     import { Client } from "do-math-sdk";
-    import base64url from "base64url";
     import { PasskeyServer, PasskeyKit, SACClient, SignerStore, PasskeyClient, type SignerLimits, SignerKey } from "passkey-kit";
     import { fundPubkey, fundSigner } from "../lib/common";
 
@@ -80,12 +79,12 @@
             loading.set("createWallet", true);
             loading = loading
 
-            const { keyId, contractId, built } = await pk_wallet.createWallet(
+            const { keyId_base64, contractId, built } = await pk_wallet.createWallet(
                 "Do Math",
                 "Do Math",
             );
 
-            keyId_ = base64url(keyId);
+            keyId_ = keyId_base64;
 
             const res = await pk_server.send(built);
 
@@ -103,11 +102,9 @@
         }
     }
     async function connectWallet(keyId: string) {
-        const { keyId: kid, contractId } = await pk_wallet.connectWallet({
-            keyId,
-        });
+        const { keyId_base64, contractId } = await pk_wallet.connectWallet({ keyId });
 
-        keyId_ = base64url(kid);
+        keyId_ = keyId_base64;
 
         if (!keyId) {
             url.searchParams.set("keyId", keyId_);

@@ -1,4 +1,4 @@
-import { Account, Keypair, SorobanRpc, StrKey } from "@stellar/stellar-sdk"
+import { Account, Keypair, SorobanRpc, StrKey } from "@stellar/stellar-sdk/minimal"
 import { basicNodeSigner } from "@stellar/stellar-sdk/contract";
 
 export const rpc = new SorobanRpc.Server(import.meta.env.PUBLIC_RPC_URL);
