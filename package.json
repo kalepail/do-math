@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "dude": "cd ./contracts/do-math-sdk && npm i && npm run build"
-  },  
+  },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/svelte": "^5.7.1",
@@ -17,6 +17,7 @@
     "astro": "^4.15.11",
     "do-math-sdk": "file:./contracts/do-math-sdk",
     "passkey-kit": "^0.9.2",
+    "qrcode": "^1.5.4",
     "svelte": "^4.2.19",
     "tailwindcss": "^3.4.13"
   },

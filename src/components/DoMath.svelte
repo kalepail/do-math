@@ -4,8 +4,10 @@
     import { Client } from "do-math-sdk";
     import { PasskeyServer, PasskeyKit, SACClient, SignerStore, PasskeyClient, type SignerLimits, SignerKey } from "passkey-kit";
     import { fundPubkey, fundSigner } from "../lib/common";
+    import QRCode from 'qrcode'
 
     let url: URL
+    let qr_code: string
 
     const pk_server = new PasskeyServer({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
@@ -40,6 +42,11 @@
     let b: number;
 
     let loading: Map<string, boolean> = new Map()
+
+    $: {
+        if (contractId_ && keypair)
+            genQrCode(location.origin + `?contractId=${contractId_}&secret=${keypair.secret()}`)
+    }
 
     onMount(() => {
         url = new URL(location.href);
@@ -265,6 +272,12 @@
         }
     }
 
+    async function genQrCode(data) {
+        qr_code = await QRCode.toDataURL(data, {
+            errorCorrectionLevel: 'L',
+            margin: 0,
+        })
+    }
     function refresh() {
         a = parseInt(Math.random().toString().slice(2, 5));
         b = parseInt(Math.random().toString().slice(2, 5));
@@ -354,6 +367,7 @@
             <a class="bg-black text-white px-2 py-1 rounded" href={location.origin + `?contractId=${contractId_}&secret=${keypair.secret()}`} target="_blank" rel="nofollow">
                 Share (Ed25519)
             </a>
+            <img class="mt-2" src={qr_code}>
         </div>
     {/if}
 {:else}
