@@ -1,19 +1,30 @@
+import { Buffer } from "buffer";
 import {
   AssembledTransaction,
   Client as ContractClient,
-  type ClientOptions as ContractClientOptions,
+  ClientOptions as ContractClientOptions,
+  MethodOptions,
   Spec as ContractSpec,
-} from '@stellar/stellar-sdk/contract';
+} from '@stellar/stellar-sdk/minimal/contract';
 import type {
   i128,
   Option,
-} from '@stellar/stellar-sdk/contract';
+} from '@stellar/stellar-sdk/minimal/contract';
+
+if (typeof window !== 'undefined') {
+  //@ts-ignore Buffer exists
+  window.Buffer = window.Buffer || Buffer;
+}
+
+export const Errors = {
+
+}
 
 export interface Client {
   /**
    * Construct and simulate a do_math transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  do_math: ({source, a, b, sac}: {source: string, a: i128, b: i128, sac: Option<string>}, options?: {
+  do_math: ({ source, a, b, sac }: { source: string, a: i128, b: i128, sac: Option<string> }, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -29,12 +40,25 @@ export interface Client {
      */
     simulate?: boolean;
   }) => Promise<AssembledTransaction<i128>>
-
 }
 export class Client extends ContractClient {
+  static async deploy<T = Client>(
+    /** Options for initalizing a Client as well as for calling a method, with extras specific to deploying. */
+    options: MethodOptions &
+      Omit<ContractClientOptions, "contractId"> & {
+        /** The hash of the Wasm blob, which must already be installed on-chain. */
+        wasmHash: Buffer | string;
+        /** Salt used to generate the contract's ID. Passed through to {@link Operation.createCustomContract}. Default: random. */
+        salt?: Buffer | Uint8Array;
+        /** The format used to decode `wasmHash`, if it's provided as a string. */
+        format?: "hex" | "base64";
+      }
+  ): Promise<AssembledTransaction<T>> {
+    return ContractClient.deploy(null, options)
+  }
   constructor(public readonly options: ContractClientOptions) {
     super(
-      new ContractSpec([ "AAAAAAAAAAAAAAAHZG9fbWF0aAAAAAAEAAAAAAAAAAZzb3VyY2UAAAAAABMAAAAAAAAAAWEAAAAAAAALAAAAAAAAAAFiAAAAAAAACwAAAAAAAAADc2FjAAAAA+gAAAATAAAAAQAAAAs=" ]),
+      new ContractSpec(["AAAAAAAAAAAAAAAHZG9fbWF0aAAAAAAEAAAAAAAAAAZzb3VyY2UAAAAAABMAAAAAAAAAAWEAAAAAAAALAAAAAAAAAAFiAAAAAAAACwAAAAAAAAADc2FjAAAAA+gAAAATAAAAAQAAAAs="]),
       options
     )
   }

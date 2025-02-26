@@ -1,7 +1,7 @@
 /// <reference path="../.astro/types.d.ts" />
 
 interface ImportMetaEnv {
-    readonly PUBLIC_FACTORY: string
+    readonly PUBLIC_WALLET_WASM_HASH: string
     readonly PUBLIC_DO_MATH: string
     readonly PUBLIC_DO_MATH_POLICY: string
     readonly PUBLIC_NATIVE: string
@@ -10,6 +10,7 @@ interface ImportMetaEnv {
     readonly PUBLIC_LAUNCHTUBE_URL: string
     readonly PUBLIC_LAUNCHTUBE_JWT: string
     readonly PUBLIC_MERCURY_URL: string
+    readonly PUBLIC_MERCURY_PROJECT_NAME: string
     readonly PUBLIC_MERCURY_JWT: string
   }
   

@@ -1,7 +1,8 @@
-import { Account, Keypair, SorobanRpc, StrKey } from "@stellar/stellar-sdk/minimal"
+import { Account, Keypair, StrKey } from "@stellar/stellar-sdk/minimal"
 import { basicNodeSigner } from "@stellar/stellar-sdk/contract";
+import { Server } from "@stellar/stellar-sdk/minimal/rpc";
 
-export const rpc = new SorobanRpc.Server(import.meta.env.PUBLIC_RPC_URL);
+export const rpc = new Server(import.meta.env.PUBLIC_RPC_URL);
 
 export const mockPubkey = StrKey.encodeEd25519PublicKey(Buffer.alloc(32))
 export const mockSource = new Account(mockPubkey, '0')

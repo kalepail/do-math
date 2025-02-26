@@ -18,7 +18,7 @@
     const pk_wallet = new PasskeyKit({
         rpcUrl: import.meta.env.PUBLIC_RPC_URL,
         networkPassphrase: import.meta.env.PUBLIC_PASSPHRASE,
-        factoryContractId: import.meta.env.PUBLIC_FACTORY,
+        walletWasmHash: import.meta.env.PUBLIC_WALLET_WASM_HASH,
     });
 
     const sac = new SACClient({
@@ -86,14 +86,14 @@
             loading.set("createWallet", true);
             loading = loading
 
-            const { keyId_base64, contractId, built } = await pk_wallet.createWallet(
+            const { keyIdBase64, contractId, signedTx } = await pk_wallet.createWallet(
                 "Do Math",
                 "Do Math",
             );
 
-            keyId_ = keyId_base64;
+            keyId_ = keyIdBase64;
 
-            const res = await pk_server.send(built);
+            const res = await pk_server.send(signedTx);
 
             console.log(res);
 
@@ -109,9 +109,9 @@
         }
     }
     async function connectWallet(keyId: string) {
-        const { keyId_base64, contractId } = await pk_wallet.connectWallet({ keyId });
+        const { keyIdBase64, contractId } = await pk_wallet.connectWallet({ keyId });
 
-        keyId_ = keyId_base64;
+        keyId_ = keyIdBase64;
 
         if (!keyId) {
             url.searchParams.set("keyId", keyId_);
@@ -206,9 +206,14 @@
             // ed25519 key can call do_math contract but only if it also calls the do_math policy
             ed25519_limits.set(import.meta.env.PUBLIC_DO_MATH, [SignerKey.Policy(import.meta.env.PUBLIC_DO_MATH_POLICY)])
 
-            const at = await pk_wallet.addEd25519(
+            // const at = await pk_wallet.addEd25519(
+            //     keypair.publicKey(), 
+            //     ed25519_limits,
+            //     SignerStore.Temporary
+            // );
+            const at = await pk_wallet.updateEd25519(
                 keypair.publicKey(), 
-                ed25519_limits,
+                ed25519_limits, 
                 SignerStore.Temporary
             );
 
@@ -272,7 +277,7 @@
         }
     }
 
-    async function genQrCode(data) {
+    async function genQrCode(data: string) {
         qr_code = await QRCode.toDataURL(data, {
             errorCorrectionLevel: 'L',
             margin: 0,

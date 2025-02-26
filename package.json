@@ -13,22 +13,16 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/svelte": "^5.7.1",
     "@astrojs/tailwind": "^5.1.1",
-    "@stellar/stellar-sdk": "13.0.0-beta.1",
+    "@stellar/stellar-sdk": "^13.1.0",
     "astro": "^4.15.11",
     "do-math-sdk": "file:./contracts/do-math-sdk",
-    "passkey-kit": "^0.9.2",
+    "passkey-kit": "^0.10.13",
     "qrcode": "^1.5.4",
     "svelte": "^4.2.19",
-    "tailwindcss": "^3.4.13"
-  },
-  "devDependencies": {
-    "@types/node": "^22.7.4",
-    "typescript": "^5.6.2",
-    "vite-plugin-filter-replace": "^0.1.13"
-  },
-  "pnpm": {
-    "overrides": {
-      "@stellar/stellar-sdk": "$@stellar/stellar-sdk"
-    }
+    "tailwindcss": "^3.4.13",
+    "@types/node": "^22.13.5",
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.7.3",
+    "vite-plugin-filter-replace": "^0.1.14"
   }
 }

@@ -1,6 +1,6 @@
 stellar contract deploy --wasm target/wasm32-unknown-unknown/release/do_math.wasm --network testnet --source default
 stellar contract deploy --wasm target/wasm32-unknown-unknown/release/do_math_policy.wasm --network testnet --source default
 
-stellar contract bindings typescript --contract-id NIL --wasm target/wasm32-unknown-unknown/release/do_math.wasm --network testnet --output-dir do-math-sdk --overwrite
+stellar contract bindings typescript --wasm target/wasm32-unknown-unknown/release/do_math.wasm --network testnet --output-dir do-math-sdk --overwrite
 
 stellar contract invoke --id CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC --network testnet --source default -- transfer --from default --to CCGF5FRIVDCKJBD2WEFN67SI64QL6YP27OZY345NYGAYNOVFFG3IZ5O4 --amount 10000000
