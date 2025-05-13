@@ -6,23 +6,22 @@
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "dude": "cd ./contracts/do-math-sdk && npm i && npm run build"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/svelte": "^5.7.1",
     "@astrojs/tailwind": "^5.1.1",
-    "@stellar/stellar-sdk": "^13.1.0",
+    "@stellar/stellar-sdk": "^13.3.0",
     "astro": "^4.15.11",
     "do-math-sdk": "file:./contracts/do-math-sdk",
-    "passkey-kit": "^0.10.13",
+    "passkey-kit": "^0.10.24",
     "qrcode": "^1.5.4",
     "svelte": "^4.2.19",
     "tailwindcss": "^3.4.13",
-    "@types/node": "^22.13.5",
+    "@types/node": "^22.15.17",
     "@types/qrcode": "^1.5.5",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.3",
     "vite-plugin-filter-replace": "^0.1.14"
   }
 }
